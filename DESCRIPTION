@@ -1,0 +1,23 @@
+Package: PermutateR
+Title: Performs a Permutation Test
+Version: 0.0.0.9000
+Authors@R: 
+    person(given = "Richard",
+           family = "Honor",
+           role = c("aut", "cre"),
+           email = "richardhonor@gmail.com",
+           comment = c(ORCID = "0000-0003-3366-8851"))
+Description: The functions contained in this package provide a method to perform a permutation test, 
+    using the statistical model, and data supplied by the user. The permutation test involves
+    randomly sampling one column from a data frame a specified amount of times, performing a model of 
+    choice of over the data frame, and obtaining a distribution of test statistics from each model
+    fitted over random data. There is also the functionality to optimize the simulation over all 
+    available cores with a Macintosh computer. 
+Imports:
+	parallel,
+	ggplot2
+License: `use_mit_license()`
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.1
