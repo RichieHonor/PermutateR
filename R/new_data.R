@@ -15,7 +15,7 @@
 new_data<-function(Data,Column_Name=NA){ #Function to build a data frame with columns representing permutations of the given vector.
 
   #Making column name a string
-  #Column_Name<-deparse(substitute(Column_Name))
+ # Column_Name<-deparse(substitute(Column_Name))
 
   # stopping if column name not entered
   if(is.na(Column_Name)){
@@ -23,7 +23,7 @@ new_data<-function(Data,Column_Name=NA){ #Function to build a data frame with co
   }
 
   #   #Removing Rows with NA's for the focal column.
-  data2<- data[!is.na(data[[Column_Name]]),]
+  data2<- Data[!is.na(Data[[Column_Name]]),]
 
   #Sample column
   Random<-sample(data2[[Column_Name]],replace=F)

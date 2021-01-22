@@ -4,12 +4,12 @@
 \alias{model_extract}
 \title{Extract Focal Parameter from Model}
 \usage{
-model_extract(Model_Object, Data, ...)
+model_extract(Data, Model_Object, Null_Model, ...)
 }
 \arguments{
-\item{Model_Object}{A statistical model object (change name)}
-
 \item{Data}{The data that the model is built from.}
+
+\item{Model_Object}{A statistical model object (change name)}
 }
 \value{
 The desired test statistic

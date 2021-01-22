@@ -9,16 +9,24 @@
 #' @return The desired test statistic
 #' @export
 
-model_extract<-function(Model_Object, Data, ...){
+model_extract<-function(Data,Model_Object,Null_Model,...){
 
 
-  fit<-update(Model_Object,data=Data) #Model with new data
+ fitNew<-update(Model_Object,data=Data) #Fitting model with new randomized data.
 
-  invisible(capture.output(b<-summary(fit,standardize=T)[[1]])) #Summarize model
+ AnovaOutput<-as.data.frame(anova(Null_Model,fitNew)) #Performing an anova with
+ #the model with random data, and the model without that data at all (likelyhood)
+ #Ratio test
 
-  Z<-b[b$lhs=="indirect","z"]#Extract coefficient of interest (z value)
+ Z<-AnovaOutput[AnovaOutput$Res.Df==min(AnovaOutput$Res.Df),"F"] #Capturing the F
+ #value from the anova.
 
-  return(Z)
+
+ # invisible(capture.output(b<-summary(fit,standardize=T)[[1]])) #Summarize model
+ #  #
+ #  Z<-b[b$lhs=="indirect","z"]#Extract coefficient of interest (z value)
+ #  #
+   return(Z)
 }
 
 

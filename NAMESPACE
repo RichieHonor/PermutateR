@@ -2,4 +2,4 @@
 
 export(model_extract)
 export(new_data)
-export(perm_test)
+export(perm_test_LR)
