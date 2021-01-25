@@ -7,76 +7,99 @@
 #'  from a likelyhood ratio test. The null model is determined to be the
 #'  Model_Object, updated to exclude the supplied variable.
 #'
-#' @param Model_Object A statistical model object (change name).
+#' @param Model_Object A statistical model object.
 #' @param Data The data that the model is built from.
 #' @param Variable The variable requiring the permutation test.
+#' @param Test_Statistic The desired test statistic to conduct the permutation test.
+#' Must check with an anova that the test statistic exists as an output of anova.
 #' @param Replication The number of simulations in the permutation test.
+#' @param OutputData Should the simulated test statistics be outputted ?
 #' @return A list of two items. The first is a data frame of results of the
 #' permutation test. The second is a histogram displaying the sampling
 #' distribution of the simulated test statistics, with a red line displaying the
-#' test statistic of the original (non-randomized) data.
+#' test statistic of the original (non-randomized) data. If OutputData=T, then
+#' a vector of simulated test statistics will also be included in the output list.
 #' @export
 
 
-perm_test_LR<-function(Model_Object,Data,Variable,Replication,UseAllAvailableCores=TRUE){
+perm_test_LR<-function(Model_Object,Variable,Test_Statistic,Replication,UseAllAvailableCores=TRUE,OutputData=FALSE){
 
 
- if(is.character(substitute(Variable))){
-    Variable<-str2lang(Variable)
-    Variable<-deparse(substitute(Variable))
- }
-else {
+   #Converting Variable name  to a character.
+   if(is.character(substitute(Variable))){
+      Variable<-str2lang(Variable)
+      Variable<-deparse(substitute(Variable))
+   }
+   #Else, converting the name to a character.
+   else {
+      Variable<-deparse(substitute(Variable))
+   }
 
-   Variable<-deparse(substitute(Variable))
+   #Converting Test_Statistic name to a character.
+   if(is.character(substitute(Test_Statistic))){
+      Test_Statistic<-str2lang(Test_Statistic)
+      Test_Statistic<-deparse(substitute(Test_Statistic))
+   }
+   #Else, converting the name to a character.
+   else {
+      Test_Statistic<-deparse(substitute(Test_Statistic))
+   }
 
 
-}
 
+
+   #Obtaining the data frame including only the rows and columns used in the model.
+   data2<- model.frame(Model_Object,drop.unused.levels=TRUE)
+
+
+   #Refitting the model object with this minimal data frame.
+   fit_True<-update(Model_Object,data=data2)
+
+
+   #Creating a new formula string for the update function.
    NewFormula<-paste("~.-",Variable,sep="")
 
-
- #Creating a formula in the form of a string to be supplied to the update function.
-
-  print(NewFormula)
-
-  #Obtaining the null model without the variable
-  fit0<-update(Model_Object,as.formula(NewFormula))
-
-#   #Determining the real z value
-   Real_Z<-model_extract(Model_Object,fit0,Data=Data)
-#
-#   #Obtaining data frames with desired replication
-   Data_Frames<-replicate(Replication,new_data(Data,Variable),simplify=F)
+  #Obtaining the null model without the variable for the likelyhood ratio test.
+   #This is referred to as "fit_Null"
+  fit_Null<-update(fit_True,as.formula(NewFormula))
 
 
 
-   if(UseAllAvailableCores==TRUE){
-
-#   # Modeling desired formula over each data frame with a random permutation
-   random_Z<-unlist(parallel::mclapply(Data_Frames,model_extract,Model_Object=Model_Object,Null_Model=fit0))
-# #
-   }
-
-   else{
-
-     #   # Modeling desired formula over each data frame with a random permutation
-     random_Z<-unlist(lapply(Data_Frames,model_extract,Model_Object=Model_Object,Null_Model=fit0))
-     # #
-   }
+ #Determining the real test statistic
+   Real_TS<-model_extract(Data.ME=data2,Model_Object.ME=fit_True,Null_Model.ME=fit_Null,Test_Statistic.ME=Test_Statistic)
 
 
-#  #Obtaining p value
-   p_Val<-length(random_Z[abs(random_Z)>abs(Real_Z)])/length(random_Z)
-#
-   out_P<-paste("The simulated p value is:",p_Val,sep=" ")#Creating a string to
-   #put the p value
 
-#   #Returning a histogram of z values
- p<-ggplot2::ggplot()+
-     geom_histogram(aes(x=random_Z),bins = 50) +
-    geom_vline(aes(xintercept=Real_Z),colour="red")
- #
-   return(list(out_P,p))
+   #Obtaining data frames with desired replication
+   Data_Frames<-replicate(Replication,new_data(data2,Variable),simplify=F)
+
+
+
+          if(UseAllAvailableCores==TRUE){# Modeling desired formula over each
+             #data frame with a random permutation
+          random_TS<-unlist(parallel::mclapply(Data_Frames,model_extract,Model_Object.ME=fit_True,Null_Model.ME=fit_Null,Test_Statistic.ME=Test_Statistic))
+          }
+
+          else{ # Modeling desired formula over each data frame with a random permutation
+             random_TS<-unlist(lapply(Data_Frames,model_extract,Model_Object.ME=fit_True,Null_Model.ME=fit_Null,Test_Statistic.ME=Test_Statistic))
+          }
+
+
+   #Obtaining p value
+    p_Val<-length(random_TS[abs(random_TS)>abs(Real_TS)])/length(random_TS)
+
+    out_P<-paste("The simulated p-value value is:",p_Val,sep=" ")#Creating a string to
+    #put the p value
+
+    #Returning a histogram of z values
+  p<-ggplot2::ggplot()+
+      geom_histogram(aes(x=random_TS),bins = 50) +
+     geom_vline(aes(xintercept=Real_TS),colour="red")
+
+  if(OutputData=T){
+    return(list(out_P,p,random_TS))
+  }
+  else return(list(out_P,p))
 }
 
 

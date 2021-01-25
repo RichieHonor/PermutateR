@@ -22,12 +22,9 @@ new_data<-function(Data,Column_Name=NA){ #Function to build a data frame with co
     stop("No column name provided, must be a character string")
   }
 
-  #   #Removing Rows with NA's for the focal column.
-  data2<- Data[!is.na(Data[[Column_Name]]),]
-
   #Sample column
-  Random<-sample(data2[[Column_Name]],replace=F)
+  Random<-sample(Data[[Column_Name]],replace=F)
   #
-  data2[,Column_Name]<-Random
-  return(data2)
+  Data[,Column_Name]<-Random
+  return(Data)
 }
