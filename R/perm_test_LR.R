@@ -96,7 +96,7 @@ perm_test_LR<-function(Model_Object,Variable,Test_Statistic,Replication,UseAllAv
       geom_histogram(aes(x=random_TS),bins = 50) +
      geom_vline(aes(xintercept=Real_TS),colour="red")
 
-  if(OutputData=T){
+  if(OutputData==T){
     return(list(out_P,p,random_TS))
   }
   else return(list(out_P,p))
