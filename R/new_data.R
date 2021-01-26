@@ -12,19 +12,33 @@
 #' @export
 
 
-new_data<-function(Data,Column_Name=NA){ #Function to build a data frame with columns representing permutations of the given vector.
+new_data<-function(Data,Column_Name=NA){
 
-  #Making column name a string
- # Column_Name<-deparse(substitute(Column_Name))
 
-  # stopping if column name not entered
-  if(is.na(Column_Name)){
-    stop("No column name provided, must be a character string")
-  }
-
-  #Sample column
-  Random<-sample(Data[[Column_Name]],replace=F)
-  #
-  Data[,Column_Name]<-Random
+  Random<-sample(Data[[Column_Name]],replace=F)#Sampling column
+  Data[,Column_Name]<-Random#Assigning randomized column to data frame
   return(Data)
 }
+
+new_data2<-function(Data,Column_Names=NA){
+
+  Random_Cols<-dplyr::select(Data,all_of(Column_Names)) #Columns that are randomized.
+  Constant_Cols<-dplyr::select(Data,!all_of(Column_Names)) #Columns that are not randomized.
+
+  Random_Cols<-apply(Random_Cols,2,sample) #Sampling only the columns specified to be randomized.
+
+ outDat<-cbind(Constant_Cols,Random_Cols) #Rejoining the randomized columns with the non-randomized columns
+
+  return(outDat)
+}
+
+
+
+
+
+
+
+
+
+
+

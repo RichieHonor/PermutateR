@@ -15,7 +15,8 @@ Description: The functions contained in this package provide a method to perform
     available cores with a Macintosh computer. 
 Imports:
 	parallel,
-	ggplot2
+	ggplot2,
+	dplyr
 License: `use_mit_license()`
 Encoding: UTF-8
 LazyData: true

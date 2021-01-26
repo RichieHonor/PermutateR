@@ -1,4 +1,4 @@
-#' Perform a permutation test
+#' Perform a permutation test using the likelyhood ratio test
 #'
 #' This function performs a permutation test on a model object. It makes use of
 #'  the new_data function to resample a variable in a data frame. Then, it
@@ -44,8 +44,6 @@ perm_test_LR<-function(Model_Object,Variable,Test_Statistic,Replication,UseAllAv
    else {
       Test_Statistic<-deparse(substitute(Test_Statistic))
    }
-
-
 
 
    #Obtaining the data frame including only the rows and columns used in the model.
