@@ -2,4 +2,6 @@
 
 export(model_extract)
 export(new_data)
-export(perm_test_LR)
+export(permTest_Contrast)
+export(permTest_LR)
+export(permTest_LR_int)

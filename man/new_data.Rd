@@ -21,3 +21,4 @@ This function resamples a column in a data frame. It first removes all NA's
 from the column, the samples that column without replacement. The resampled
 column then replaces the original column in the data frame.
 }
+\keyword{internal}

@@ -4,12 +4,12 @@
 \alias{model_extract}
 \title{Extract Focal Parameter from Model}
 \usage{
-model_extract(Data, Model_Object, Null_Model, ...)
+model_extract(Data.ME, Model_Object.ME, Null_Model.ME, Test_Statistic.ME, ...)
 }
 \arguments{
-\item{Data}{The data that the model is built from.}
-
 \item{Model_Object}{A statistical model object (change name)}
+
+\item{Data}{The data that the model is built from.}
 }
 \value{
 The desired test statistic
@@ -19,3 +19,4 @@ This function extracts the desired test statistic from a model object. This
 test statistic will provide the foundation of the permutation test. During the
 permutation test, only this parameter will be stored.
 }
+\keyword{internal}
