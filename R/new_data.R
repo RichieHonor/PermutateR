@@ -9,6 +9,7 @@
 #' resampled
 #' @return The same data frame provided, but with the specified column
 #' randomized.
+#' @keywords internal
 #' @export
 
 

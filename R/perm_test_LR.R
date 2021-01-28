@@ -1,17 +1,19 @@
 #' Perform a permutation test using the likelyhood ratio test
 #'
-#' This function performs a permutation test on a model object. It makes use of
-#'  the new_data function to resample a variable in a data frame. Then, it
-#'  generates a specified amount of replicated data frames and fits the supplied
-#'  model to each one. The permulation test is based on the f values generated
-#'  from a likelyhood ratio test. The null model is determined to be the
-#'  Model_Object, updated to exclude the supplied variable.
+#' This function performs a permutation test on a model object using a likelyhood
+#' ratio test. It works by generating a specified amount of replicated
+#' data frames and fits the supplied model object to each one. The permulation
+#' test is based on the test statistic output of  a likelyhood ratio test.
+#'  The null model is the Model_Object without the variable of interest. This
+#'  function will not work on interactions, to run a permutation test on an
+#'   interaction with a likelyhood ratio test, use permTest_LR_int().
 #'
 #' @param Model_Object A statistical model object.
 #' @param Data The data that the model is built from.
-#' @param Variable The variable requiring the permutation test.
-#' @param Test_Statistic The desired test statistic to conduct the permutation test.
-#' Must check with an anova that the test statistic exists as an output of anova.
+#' @param Variable A character string of the variable requiring the permutation
+#' test is run on.
+#' @param Test_Statistic A character string of the desired test statistic to
+#' conduct the permutation test.
 #' @param Replication The number of simulations in the permutation test.
 #' @param OutputData Should the simulated test statistics be outputted ?
 #' @return A list of two items. The first is a data frame of results of the
@@ -22,28 +24,8 @@
 #' @export
 
 
-perm_test_LR<-function(Model_Object,Variable,Test_Statistic,Replication,UseAllAvailableCores=TRUE,OutputData=FALSE){
+permTest_LR<-function(Model_Object,Variable,Test_Statistic,Replication,UseAllAvailableCores=TRUE,OutputData=FALSE){
 
-
-   #Converting Variable name  to a character.
-   if(is.character(substitute(Variable))){
-      Variable<-str2lang(Variable)
-      Variable<-deparse(substitute(Variable))
-   }
-   #Else, converting the name to a character.
-   else {
-      Variable<-deparse(substitute(Variable))
-   }
-
-   #Converting Test_Statistic name to a character.
-   if(is.character(substitute(Test_Statistic))){
-      Test_Statistic<-str2lang(Test_Statistic)
-      Test_Statistic<-deparse(substitute(Test_Statistic))
-   }
-   #Else, converting the name to a character.
-   else {
-      Test_Statistic<-deparse(substitute(Test_Statistic))
-   }
 
 
    #Obtaining the data frame including only the rows and columns used in the model.

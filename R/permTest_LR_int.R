@@ -3,22 +3,20 @@
 #' This function performs a permutation test on a model object. It makes use of
 #'  the new_data function to resample a variable in a data frame. Then, it
 #'  generates a specified amount of replicated data frames and fits the supplied
-#'  model to each one. The permulation test is based on the f values generated
+#'  model to each one. The permulation test is based on the test statistic generated
 #'  from a likelyhood ratio test. The null model is determined to be the
 #'  Model_Object, updated to exclude the supplied variable.
 #'
 #' @param Model_Object A statistical model object.
 #' @param Data The data that the model is built from.
-#' @param Randomize_Variables A vector of variables that are to be randomized in
-#' the permutation test
-#'@param Test_Parameter The parameter that the permutation test is to be performed on.
-#'For example, 'var1:var2' .
-#' @param Test_Statistic The desired test statistic to conduct the permutation test.
-#' This can be an f value, chi-squared value, p-value...etc, depending on what
-#' test statistics are available for your model object. These are different for
-#' lm, glm, glmmTMB, etc. To determine what test statitistic are available, run
-#' XXXXX
-#' using the 'anova' function and choose one of the output parameters.
+#' @param Randomize_Variables A character vector of variables that are to be
+#'  randomized in the permutation test. ex. c("var1","var2") or "var1".
+#'@param Test_Parameter A character string indicating the parameter that the
+#'permutation test is to be performed on.For example, 'var1:var2', or "var1"
+#' @param Test_Statistic A character string indicating the desired test
+#' statistic to conduct the permutation test. This can be an f value,
+#' chi-squared value, p-value...etc, depending on what test statistics are
+#' available for your model object. These are different for lm, glm, glmmTMB, etc.
 #' @param Replication The number of simulations in the permutation test.
 #' @param OutputData Should the simulated test statistics be outputted ?
 #' @return A list of two items. The first is a data frame of results of the
@@ -29,29 +27,7 @@
 #' @export
 
 
-perm_test_LR_int<-function(Model_Object,Test_Parameter,Randomize_Variables,Test_Statistic,Replication,UseAllAvailableCores=TRUE,OutputData=FALSE){
-
-
-  #Converting Test_Parameter name  to a character, depending on whether the input
-  #added with quotes:
-  if(is.character(substitute(Test_Parameter))){
-    Test_Parameter<-str2lang(Test_Parameter)
-    Test_Parameter<-deparse(substitute(Test_Parameter))
-  }
-  #or without
-  else {
-    Test_Parameter<-deparse(substitute(Test_Parameter))
-  }
-
-  #Converting Test_Statistic name to a character like above.
-  if(is.character(substitute(Test_Statistic))){
-    Test_Statistic<-str2lang(Test_Statistic)
-    Test_Statistic<-deparse(substitute(Test_Statistic))
-  }
-  else {
-    Test_Statistic<-deparse(substitute(Test_Statistic))
-  }
-
+permTest_LR_int<-function(Model_Object,Test_Parameter,Randomize_Variables,Test_Statistic,Replication,UseAllAvailableCores=TRUE,OutputData=FALSE){
 
   #Obtaining the data frame including only the rows and columns used in the model.
   data2<- model.frame(Model_Object,drop.unused.levels=TRUE)
@@ -78,11 +54,11 @@ perm_test_LR_int<-function(Model_Object,Test_Parameter,Randomize_Variables,Test_
 
   if(UseAllAvailableCores==TRUE){# Modeling desired formula over each
     #data frame with a random permutation
-    random_TS<-unlist(parallel::mclapply(Data_Frames,model_extract2,Model_Object.ME=fit_True,Null_Model.ME=fit_Null,Test_Statistic.ME=Test_Statistic,Formula.ME=NewFormula))
+    random_TS<-unlist(parallel::mclapply(Data_Frames,model_extract2,Model_Object.ME=fit_True,Test_Statistic.ME=Test_Statistic,Formula.ME=NewFormula))
   }
 
   else{ # Modeling desired formula over each data frame with a random permutation
-    random_TS<-unlist(lapply(Data_Frames,model_extract2,Model_Object.ME=fit_True,Null_Model.ME=fit_Null,Test_Statistic.ME=Test_Statistic,Formula.ME=NewFormula))
+    random_TS<-unlist(lapply(Data_Frames,model_extract2,Model_Object.ME=fit_True,Test_Statistic.ME=Test_Statistic,Formula.ME=NewFormula))
   }
 
 
