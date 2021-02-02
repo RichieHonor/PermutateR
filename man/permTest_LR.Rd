@@ -25,8 +25,6 @@ conduct the permutation test.}
 \item{Replication}{The number of simulations in the permutation test.}
 
 \item{OutputData}{Should the simulated test statistics be outputted ?}
-
-\item{Data}{The data that the model is built from.}
 }
 \value{
 A list of two items. The first is a data frame of results of the
@@ -38,9 +36,11 @@ a vector of simulated test statistics will also be included in the output list.
 \description{
 This function performs a permutation test on a model object using a likelyhood
 ratio test. It works by generating a specified amount of replicated
-data frames and fits the supplied model object to each one. The permulation
+data frames and fits the supplied model object to each one. The permutation
 test is based on the test statistic output of  a likelyhood ratio test.
-The null model is the Model_Object without the variable of interest. This
-function will not work on interactions, to run a permutation test on an
-interaction with a likelyhood ratio test, use permTest_LR_int().
+This function will not work on interactions, to run a permutation test on an
+interaction with a likelyhood ratio test, use permTest_LR_int(). When there is
+no interaction, the null model lacks the variable of interest, and only needs
+to be fitted one. Therefore, only 1 model is fitted on each iteration, making
+it twice as fast as the perm_Test_LR_int function.
 }

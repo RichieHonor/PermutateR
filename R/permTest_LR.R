@@ -2,14 +2,15 @@
 #'
 #' This function performs a permutation test on a model object using a likelyhood
 #' ratio test. It works by generating a specified amount of replicated
-#' data frames and fits the supplied model object to each one. The permulation
+#' data frames and fits the supplied model object to each one. The permutation
 #' test is based on the test statistic output of  a likelyhood ratio test.
-#'  The null model is the Model_Object without the variable of interest. This
-#'  function will not work on interactions, to run a permutation test on an
-#'   interaction with a likelyhood ratio test, use permTest_LR_int().
+#'  This function will not work on interactions, to run a permutation test on an
+#'  interaction with a likelyhood ratio test, use permTest_LR_int(). When there is
+#'  no interaction, the null model lacks the variable of interest, and only needs
+#'  to be fitted one. Therefore, only 1 model is fitted on each iteration, making
+#'  it twice as fast as the perm_Test_LR_int function.
 #'
 #' @param Model_Object A statistical model object.
-#' @param Data The data that the model is built from.
 #' @param Variable A character string of the variable requiring the permutation
 #' test is run on.
 #' @param Test_Statistic A character string of the desired test statistic to
@@ -44,9 +45,26 @@ permTest_LR<-function(Model_Object,Variable,Test_Statistic,Replication,UseAllAva
   fit_Null<-update(fit_True,as.formula(NewFormula))
 
 
+  #Determining the real test statistic
+  AnovaOutput<-as.data.frame(anova(fit_Null,fit_True))
 
- #Determining the real test statistic
-   Real_TS<-model_extract(Data.ME=data2,Model_Object.ME=fit_True,Null_Model.ME=fit_Null,Test_Statistic.ME=Test_Statistic)
+  Real_TS<-AnovaOutput[2,Test_Statistic]
+
+
+  #Assessing that the test statistic output was correctly specified.
+  if(is.null(Real_TS)){
+
+     TS_Options<-colnames(AnovaOutput)
+
+     if (Test_Statistic %in%  TS_Options ){
+        message("Error: ensure that the Test Parameter is in the model object")
+     }
+
+     else{ message(paste("Error: Test_Statistic :",Test_Statistic," is not part of the model object output\nPlease pick one of:"))
+        print(TS_Options)
+        stop("Test_Statistic not valid")
+     }
+  }
 
 
 

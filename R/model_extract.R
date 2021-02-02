@@ -16,41 +16,15 @@ model_extract<-function(Data.ME,Model_Object.ME,Null_Model.ME,Test_Statistic.ME,
    #recognise fitting models with the same data object.
    data2<-Data.ME
 
+   #fitting new data to the model object
+   fitNewData<-update(Model_Object.ME,data=data2) #Fitting model with new randomized data.
 
- fitNewData<-update(Model_Object.ME,data=data2) #Fitting model with new randomized data.
-
- #Performing an anova with model without variable of interest and with randomized variable
-
-    AnovaOutput<-as.data.frame(anova(Null_Model.ME,fitNewData))
+   #Performing an anova with model without variable of interest and with randomized variable
+   AnovaOutput<-as.data.frame(anova(Null_Model.ME,fitNewData))
 
 
-#Extracting the test statistic (TS)
-
-tryCatch(
-   #attempting to get the test statistic from the model object.
-   {
-      TS<-AnovaOutput[2,Test_Statistic.ME] #Capturing the test statistic of choice.
-      if(is.null(TS)){
-         call(error)
-      }
-   },
-   #if there is an error, check to ensure that the test statistic matches what is available to the model object
-   error=function(msg){
-      TS_Options<-colnames(AnovaOutput)
-
-      if (Test_Statistic.ME %in%  TS_Options ){
-         message("Error: ensure that the Test Parameter is in the model object")
-      }
-
-      else{ message(paste("Error: Test_Statistic",Test_Statistic.ME," is not part of the model object output\nPlease pick one of:"))
-         print(TS_Options)
-         stop("Test_Statistic not valid")
-      }
-   }
-)
-
- #value from the anova.
-
+   #Extracting the test statistic (TS)
+   TS<-AnovaOutput[2,Test_Statistic.ME]
 
    return(TS)
 }
@@ -67,44 +41,19 @@ model_extract2<-function(Data.ME,Model_Object.ME,Test_Statistic.ME,Formula.ME,..
    #recognise fitting models with the same data object.
    data2<-Data.ME
 
-   #Fitting model with new randomized data.
 
-         fitNewData<-update(Model_Object.ME,data=data2)
+   #Fitting model with new randomized data.
+   fitNewData<-update(Model_Object.ME,data=data2)
 
 
    #Fitting removing term of interest in the randomized data model
     fitNewNull<-update(fitNewData,Formula.ME)
 
    #Performing an anova with the models with random data, with and without the parameter of interest
-
       AnovaOutput<-as.data.frame(anova(fitNewNull,fitNewData))
 
-
    #Extracting the test statistic (TS)
-
-      tryCatch(
-         #attempting to get the test statistic from the model object.
-         {
-            TS<-AnovaOutput[2,Test_Statistic.ME] #Capturing the test statistic of choice.
-            if(is.null(TS)){
-               call(error)
-            }
-         },
-         #if there is an error, check to ensure that the test statistic matches what is available to the model object
-         error=function(msg){
-            TS_Options<-colnames(AnovaOutput)
-
-            if (Test_Statistic.ME %in%  TS_Options ){
-               message("Error: ensure that the Test Parameter is in the model object")
-            }
-
-            else{ message(paste("Error: Test_Statistic",Test_Statistic.ME," is not part of the model object output\nPlease pick one of:"))
-               print(TS_Options)
-               stop("Test_Statistic not valid")
-            }
-         }
-      )
-
+   TS<-AnovaOutput[2,Test_Statistic.ME]
 
    return(TS)
 }
@@ -116,72 +65,15 @@ model_extract3_General<-function(Data.ME,Model_Object.ME,Variable.ME,Test_Statis
 
 
    #Performing the supplied model again with the random data.
-         Random_Model<-update(Model_Object.ME,data=Data.ME)
-
+   Random_Model<-update(Model_Object.ME,data=Data.ME)
 
    #Obtaining the output test statistic for this model.
-
-         tryCatch(
-            #attempting to get the test statistic from the model object.
-            {
-               Output<-summary(Random_Model)[["coefficients"]][Variable.ME,Test_Statistic.ME]
-            },
-            #if there is an error, check to ensure that the test statistic matches what is available to the model object
-                  error=function(msg){
-                     TS_Options<-colnames(summary(Random_Model)[["coefficients"]])
-
-                     if (Test_Statistic.ME %in%  TS_Options ){
-                        message("Error: ensure that the Test Parameter is available in summary(Model_Object)")
-                     }
-
-                     else{ message(paste("Error: Test_Statistic",Test_Statistic.ME," is not part of the model object output\nPlease pick one of:"))
-                        print(TS_Options)
-                        stop("Test_Statistic not valid")
-                     }
-                  }
-         )
+   Output<-summary(Random_Model)[["coefficients"]][Variable.ME,Test_Statistic.ME]
 
 return(Output)
 
 
 }
-
-
-
-#This function will determine the test statistic based on the output of a glmmTMB model
-model_extract3_GLMMTMB<-function(Data.ME,Model_Object.ME,Variable.ME,Test_Statistic.ME,...){
-
-
-   #Performing the supplied model again with the random data.
-
-         Random_Model<-update(Model_Object.ME,data=Data.ME)
-
-
-   #Obtaining the output test statistic for this model.
-
-      tryCatch(
-         #attempting to get the test statistic from the model object.
-         {
-            Output<-summary(Random_Model)[["coefficients"]]$cond[Variable.ME,Test_Statistic.ME]
-         },
-         #if there is an error, check to ensure that the test statistic matches what is available to the model object
-         error=function(e){
-            TS_Options<-colnames(summary(Random_Model)[["coefficients"]]$cond)
-
-            if (Test_Statistic.ME %in%  TS_Options ){
-               message("Error: ensure that the Test Parameter is available in summary(Model_Object)")
-            }
-
-            else{ message(paste("Error: Test_Statistic",Test_Statistic.ME," is not part of the model object output\nPlease pick one of:"))
-               print(TS_Options)
-               stop("Test_Statistic not valid")
-            }
-         }
-      )
-
-   return(Output)
-}
-
 
 
 

@@ -1,14 +1,14 @@
 #' Perform a permutation test on an interaction using the likelyhood ratio test
 #'
-#' This function performs a permutation test on a model object. It makes use of
-#'  the new_data function to resample a variable in a data frame. Then, it
-#'  generates a specified amount of replicated data frames and fits the supplied
-#'  model to each one. The permulation test is based on the test statistic generated
-#'  from a likelyhood ratio test. The null model is determined to be the
-#'  Model_Object, updated to exclude the supplied variable.
+#' This function performs a permutation test on an interaction in a model object
+#' using a likelyhood ratio test. It does this by re-sampling the column(s)
+#' indicated, and refitting two models to the new data: one with and one without
+#' the interaction. The function then performs a likelyhood ratio test using the
+#' anova function on these two models, creating a simulated permutation test
+#' output. Because two models are needed to be created on each iteration to test
+#' the interaction, this function is the slowest of the permutation tests.
 #'
 #' @param Model_Object A statistical model object.
-#' @param Data The data that the model is built from.
 #' @param Randomize_Variables A character vector of variables that are to be
 #'  randomized in the permutation test. ex. c("var1","var2") or "var1".
 #'@param Test_Parameter A character string indicating the parameter that the
@@ -44,13 +44,45 @@ permTest_LR_int<-function(Model_Object,Test_Parameter,Randomize_Variables,Test_S
   fit_Null<-update(fit_True,NewFormula)
 
   #Determining the real test statistic
-  Real_TS<-model_extract(Data.ME=data2,Model_Object.ME=fit_True,Null_Model.ME=fit_Null,Test_Statistic.ME=Test_Statistic)
+  AnovaOutput<-as.data.frame(anova(fit_Null,fit_True))
+
+  Real_TS<-AnovaOutput[2,Test_Statistic]
+
+
+  #Assessing that the test statistic output was correctly specified.
+   if(is.null(Real_TS)){
+
+       TS_Options<-colnames(AnovaOutput)
+
+          if (Test_Statistic %in%  TS_Options ){
+              message("Error: ensure that the Test Parameter is in the model object")
+             }
+
+           else{ message(paste("Error: Test_Statistic :",Test_Statistic," is not part of the model object output\nPlease pick one of:"))
+               print(TS_Options)
+               stop("Test_Statistic not valid")
+           }
+    }
+
+
+
 
 
   #Obtaining data frames with desired replication
   Data_Frames<-replicate(Replication,new_data2(data2,Column_Names=Randomize_Variables),simplify=F)
 
 
+
+
+
+
+  ###Performing permutation test.
+
+
+
+
+  ###Permutation Test
+  ###-----
 
   if(UseAllAvailableCores==TRUE){# Modeling desired formula over each
     #data frame with a random permutation
@@ -60,6 +92,11 @@ permTest_LR_int<-function(Model_Object,Test_Parameter,Randomize_Variables,Test_S
   else{ # Modeling desired formula over each data frame with a random permutation
     random_TS<-unlist(lapply(Data_Frames,model_extract2,Model_Object.ME=fit_True,Test_Statistic.ME=Test_Statistic,Formula.ME=NewFormula))
   }
+  ###-----
+
+
+
+
 
 
   #Obtaining p value

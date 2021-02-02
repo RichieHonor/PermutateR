@@ -2,8 +2,7 @@
 % Please edit documentation in R/PermTest_Contrast.R
 \name{permTest_Contrast}
 \alias{permTest_Contrast}
-\title{Perform a permutation test on an interaction using the contrast specific in
-the model output.}
+\title{Perform a permutation test on a model object}
 \usage{
 permTest_Contrast(
   Model_Object,
@@ -19,9 +18,10 @@ permTest_Contrast(
 \item{Model_Object}{A statistical model object.}
 
 \item{Test_Parameter}{A character string indicating the parameter that the
-permutation test is to be performed on. For example, 'var1:var2'. If testing
-the effect of a categorical variable or interaction, see the output of summary
-of the model to determine what parameter the permutation test will be built on.}
+permutation test is to be performed on. For example, 'var1:var2' or "var1".
+This function also has functionality to extract multiple test statistics from
+a single permutation test. To perform permutation tests on multiple parameters,
+input a vector of parameters. For example c("var1:var2","var1","var3").}
 
 \item{Randomize_Variables}{A character vector indicating the variables that
 are to be randomized in the permutation test}
@@ -35,8 +35,6 @@ using the 'anova' function and choose one of the output parameters.}
 \item{Replication}{The number of simulations in the permutation test.}
 
 \item{OutputData}{Should the simulated test statistics be outputted ?}
-
-\item{Data}{The data that the model is built from.}
 }
 \value{
 A list of two items. The first is a data frame of results of the
@@ -44,11 +42,15 @@ permutation test. The second is a histogram displaying the sampling
 distribution of the simulated test statistics, with a red line displaying the
 test statistic of the original (non-randomized) data. If OutputData=T, then
 a vector of simulated test statistics will also be included in the output list.
+If multiple test paramters are supplied, then this output will be in a list for
+each test parameter.
 }
 \description{
 This function performs a permutation test on a model object. The permutation
-test is based on the test statistic from the summary of the model, which are
-typically contrasts. One must specify the variables to be randomized, the test
-parameter (i.e. the variable of interest), and the amount of replication to be
-performed. This function works on lm, glm, lmer, glmer and glmmTMB classes.
+test is based on the test statistics derived from the function "summary",
+which are typically contrasts. One must specify the variable(s) to be randomized,
+the test parameter(s), and the amount of replication to be performed. This
+function can perform extract multiple test parameters from the same fitted model
+thus allowing permutation tests of multiple parameters to be performed at once,
+efficiently. This function works on lm, glm, lmer, glmer and glmmTMB classes.
 }

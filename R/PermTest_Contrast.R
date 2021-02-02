@@ -1,20 +1,21 @@
-#' Perform a permutation test on an interaction using the contrast specific in
-#' the model output.
+#' Perform a permutation test on a model object
 #'
 #' This function performs a permutation test on a model object. The permutation
-#' test is based on the test statistic from the summary of the model, which are
-#' typically contrasts. One must specify the variables to be randomized, the test
-#' parameter (i.e. the variable of interest), and the amount of replication to be
-#' performed. This function works on lm, glm, lmer, glmer and glmmTMB classes.
+#' test is based on the test statistics derived from the function "summary",
+#' which are typically contrasts. One must specify the variable(s) to be randomized,
+#' the test parameter(s), and the amount of replication to be performed. This
+#' function can perform extract multiple test parameters from the same fitted model
+#' thus allowing permutation tests of multiple parameters to be performed at once,
+#' efficiently. This function works on lm, glm, lmer, glmer and glmmTMB classes.
 #'
 #' @param Model_Object A statistical model object.
-#' @param Data The data that the model is built from.
 #' @param Randomize_Variables A character vector indicating the variables that
 #' are to be randomized in the permutation test
 #'@param Test_Parameter A character string indicating the parameter that the
-#'permutation test is to be performed on. For example, 'var1:var2'. If testing
-#'the effect of a categorical variable or interaction, see the output of summary
-#'of the model to determine what parameter the permutation test will be built on.
+#'permutation test is to be performed on. For example, 'var1:var2' or "var1".
+#'This function also has functionality to extract multiple test statistics from
+#'a single permutation test. To perform permutation tests on multiple parameters,
+#'input a vector of parameters. For example c("var1:var2","var1","var3").
 #' @param Test_Statistic A Character string indicating the desired test statistic
 #' to conduct the permutation test.This can be an f value, chi-squared value,
 #'  p-value...etc, depending on what test statistics are available for your model
@@ -27,6 +28,8 @@
 #' distribution of the simulated test statistics, with a red line displaying the
 #' test statistic of the original (non-randomized) data. If OutputData=T, then
 #' a vector of simulated test statistics will also be included in the output list.
+#' If multiple test paramters are supplied, then this output will be in a list for
+#' each test parameter.
 #' @export
 
 
@@ -49,21 +52,49 @@ permTest_Contrast<-function(Model_Object,Test_Parameter,Randomize_Variables,Test
   #the model object.
 
   if(class(Model_Object)[1]=="glmmTMB"){ #Class glmmTMB
+    Model.Class<-"glmmTMB"
+
     model_extract_CallFunction<-function(Data.ME,...){
       model_extract3_GLMMTMB(Data.ME,...)
     }
   }
+
   else{ #Class other : lm , glm, lmer, glmer.
+
+    Model.Class<-"Other"
+
     model_extract_CallFunction<-function(Data.ME,...){
       model_extract3_General(Data.ME,...)
     }
-
   }
 
+
+
   #Determining the real test statistic
-  Real_TS<-model_extract_CallFunction(Data.ME=data2,Model_Object.ME=fit_True,Variable.ME=Test_Parameter,Test_Statistic.ME=Test_Statistic)
+   tryCatch(
+      {
+      #attempting to get the test statistic from the model object.
+      Real_TS<-model_extract_CallFunction(Data.ME=data2,Model_Object.ME=fit_True,Variable.ME=Test_Parameter,Test_Statistic.ME=Test_Statistic)
+      },
+          #if there is an error, check to ensure that the test statistic matches what is available to the model object
+          error=function(e){
+            if(Model.Class=="Other"){
+              TS_Options<-colnames(summary(fit_True)[["coefficients"]])
+            }
+            if(Model.Class=="glmmTMB"){
+              TS_Options<-colnames(summary(fit_True)[["coefficients"]]$cond)
+            }
 
+                 if (Test_Statistic %in%  TS_Options ){
+                    message("Error: ensure that the Test Parameter is available in summary(Model_Object)")
+                 }
 
+               else{ message(paste("Error: Test_Statistic",Test_Statistic," is not part of the model object output\nPlease pick one of:"))
+                    print(TS_Options)
+                    stop("Test_Statistic not valid")
+                 }
+      }
+   )
 
 
   #####
@@ -84,31 +115,61 @@ permTest_Contrast<-function(Model_Object,Test_Parameter,Randomize_Variables,Test
   }
 
 
-  #####
-  # Working the with simulated data
-  #______________________________________________________
-
-
-  #Obtaining p value
-  p_Val<-length(random_TS[abs(random_TS)>abs(Real_TS)])/length(random_TS)
-
-  out_P<-paste("The simulated p-value value is:",p_Val,sep=" ")#Creating a string to
-  #put the p value
-
-  #Returning a histogram of z values
-  p<-ggplot2::ggplot()+
-    geom_histogram(aes(x=random_TS),bins = 50) +
-    geom_vline(aes(xintercept=Real_TS),colour="red")
-
 
   #####
   # Formulating output
   #______________________________________________________
 
+  #For a permutation test of only 1 parameter:
 
-  if(OutputData==T){
-    return(list(out_P,p,random_TS))
+  if( length(Test_Parameter)==1){
+    out<-Format_Output(random_TS,Real_TS,OutputData,Test_Parameter)
   }
-  else return(list(out_P,p))
+
+   else{
+     #Creating a data frame out of the named vector.
+     OutputDataFrame<-stack(random_TS)
+     Real_TS_DataFrame<-stack(Real_TS)
+     out<-list()
+        #Generating results
+        for(i in 1:length(Test_Parameter)){
+          #Isolating the random TS results for the focal parameter
+          random_TS<-OutputDataFrame$values[OutputDataFrame$ind==Test_Parameter[i]]
+
+          #Isolating the real ts for the focal parameter
+          Real_TS_Focal<-Real_TS_DataFrame$value[Real_TS_DataFrame$ind==Test_Parameter[i]]
+
+          out[[i]]<-Format_Output(random_TS=random_TS,Real_TS=Real_TS_Focal,OutputData=OutputData,Test_Parameter=Test_Parameter[i])
+
+        }
+   }
+
+  return(out)
+
 }
+
+
+Format_Output<-function(random_TS,Real_TS,OutputData,Test_Parameter){
+#Obtaining p value
+p_Val<-length(random_TS[abs(random_TS)>abs(Real_TS)])/length(random_TS)
+
+#Creating a string with the p value
+out_P<-paste("The simulated p-value value for test parameter",Test_Parameter,"is:",p_Val,sep=" ")
+
+#Returning a histogram of z values
+p<-ggplot2::ggplot()+
+  geom_histogram(aes(x=random_TS),bins = 50) +
+  geom_vline(aes(xintercept=Real_TS),colour="red")+
+  xlab(Test_Parameter)
+
+if(OutputData==T){
+  return(list(out_P,p,random_TS))
+}
+
+else return(list(out_P,p))
+
+}
+
+
+
 

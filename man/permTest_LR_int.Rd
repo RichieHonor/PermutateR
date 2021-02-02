@@ -31,8 +31,6 @@ available for your model object. These are different for lm, glm, glmmTMB, etc.}
 \item{Replication}{The number of simulations in the permutation test.}
 
 \item{OutputData}{Should the simulated test statistics be outputted ?}
-
-\item{Data}{The data that the model is built from.}
 }
 \value{
 A list of two items. The first is a data frame of results of the
@@ -42,10 +40,11 @@ test statistic of the original (non-randomized) data. If OutputData=T, then
 a vector of simulated test statistics will also be included in the output list.
 }
 \description{
-This function performs a permutation test on a model object. It makes use of
-the new_data function to resample a variable in a data frame. Then, it
-generates a specified amount of replicated data frames and fits the supplied
-model to each one. The permulation test is based on the test statistic generated
-from a likelyhood ratio test. The null model is determined to be the
-Model_Object, updated to exclude the supplied variable.
+This function performs a permutation test on an interaction in a model object
+using a likelyhood ratio test. It does this by re-sampling the column(s)
+indicated, and refitting two models to the new data: one with and one without
+the interaction. The function then performs a likelyhood ratio test using the
+anova function on these two models, creating a simulated permutation test
+output. Because two models are needed to be created on each iteration to test
+the interaction, this function is the slowest of the permutation tests.
 }
