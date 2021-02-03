@@ -72,8 +72,52 @@ model_extract3_General<-function(Data.ME,Model_Object.ME,Variable.ME,Test_Statis
 
 return(Output)
 
-
 }
+
+
+#This function will determine the test statistic based on the output of a
+#sem fitted in lavaan
+model_extract3_Lavaan<-function(Data.ME,Model_Object.ME,Variable.ME,Test_Statistic.ME,...){
+
+   #Performing the supplied model again with the random data.
+   Random_Model<-update(Model_Object.ME,data=Data.ME)
+
+   #Obtaining the output data frame for this model.
+   invisible(capture.output(
+      OutputDF<-summary(Random_Model,standardize=T)[[1]]
+      ))
+
+   #extracting desired coefficients.
+   Output<-OutputDF %>% dplyr::filter(lhs %in% Variable.ME) %>% dplyr::select(Test_Statistic.ME)
+
+   Output<- Output[,Test_Statistic.ME]
+   return(Output)
+}
+
+#This function will determine the test statistics of multiple parameters in a lavaan model
+
+model_extract3_Lavaan_MultiParam<-function(Data.ME,Model_Object.ME,Variable.ME,Test_Statistic.ME,...){
+
+   #Performing the supplied model again with the random data.
+   Random_Model<-update(Model_Object.ME,data=Data.ME)
+
+   #Obtaining the output data frame for this model.
+   invisible(capture.output(
+      OutputDF<-summary(Random_Model,standardize=T)[[1]]
+   ))
+
+   #extracting desired coefficients.
+   Output<-OutputDF %>% dplyr::filter(lhs %in% Variable.ME) %>% dplyr::select(lhs,Test_Statistic.ME)
+
+
+
+   Output<-tibble::deframe(Output)
+
+
+
+   return(Output)
+}
+
 
 
 

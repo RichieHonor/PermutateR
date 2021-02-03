@@ -16,7 +16,9 @@ Description: The functions contained in this package provide a method to perform
 Imports:
 	parallel,
 	ggplot2,
-	dplyr
+	dplyr,
+	tidyr,
+	tibble
 License: `use_mit_license()`
 Encoding: UTF-8
 LazyData: true

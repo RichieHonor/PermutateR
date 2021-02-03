@@ -20,6 +20,9 @@
 #' to conduct the permutation test.This can be an f value, chi-squared value,
 #'  p-value...etc, depending on what test statistics are available for your model
 #'  object. These are different for lm, glm, glmmTMB, etc.
+#' @param Data_Supplement The data frame that the model is built on.
+#' This is necessary to supply for models of the class "lavaan" as there is not
+#' functionality to extract the data frame from the model object.
 #' using the 'anova' function and choose one of the output parameters.
 #' @param Replication The number of simulations in the permutation test.
 #' @param OutputData Should the simulated test statistics be outputted ?
@@ -33,21 +36,9 @@
 #' @export
 
 
-permTest_Contrast<-function(Model_Object,Test_Parameter,Randomize_Variables,Test_Statistic,Replication,UseAllAvailableCores=TRUE,OutputData=FALSE){
+permTest_Contrast<-function(Model_Object,Test_Parameter,Randomize_Variables,Test_Statistic,Replication,UseAllAvailableCores=TRUE,OutputData=FALSE,Data_Supplement=NULL){
 
-
-
-  #####
-  #Preparing data for simulation and determining real test statistics
-  #______________________________________________________
-
-
-  #Obtaining the data frame including only the rows and columns used in the model.
-  data2<- model.frame(Model_Object,drop.unused.levels=TRUE)
-
-  #Refitting the model object with this minimal data frame.
-  fit_True<-update(Model_Object,data=data2)
-
+   #----------
   #Determining the method of model extraction to use, depending on the class of
   #the model object.
 
@@ -58,6 +49,25 @@ permTest_Contrast<-function(Model_Object,Test_Parameter,Randomize_Variables,Test
       model_extract3_GLMMTMB(Data.ME,...)
     }
   }
+
+  else if(class(Model_Object)[1]=="lavaan"){ #Class lavaan
+
+        if(length(Test_Parameter)<2){#Single parameter inputted
+            Model.Class<-"lavaan"
+
+            model_extract_CallFunction<-function(Data.ME,...){
+              model_extract3_Lavaan(Data.ME,...)
+            }
+        }
+
+        else{#Single parameter inputted
+          Model.Class<-"lavaan"
+
+          model_extract_CallFunction<-function(Data.ME,...){
+            model_extract3_Lavaan_MultiParam(Data.ME,...)
+          }
+        }
+    }
 
   else{ #Class other : lm , glm, lmer, glmer.
 
@@ -70,6 +80,40 @@ permTest_Contrast<-function(Model_Object,Test_Parameter,Randomize_Variables,Test
 
 
 
+ #####
+  #Preparing data for simulation and determining real test statistics
+  #______________________________________________________
+
+
+  #lavaan does not allow for model frames to be extracted, therefore the
+  #user will need to input their data manually for this type of function.
+  if(Model.Class!="lavaan"){
+
+  #Obtaining the data frame including only the rows and columns used in the model.
+  data2<- model.frame(Model_Object,drop.unused.levels=TRUE)
+
+  #Refitting the model object with this minimal data frame.
+  fit_True<-update(Model_Object,data=data2)
+  }
+
+  if(Model.Class=="lavaan"){
+
+    #Obtaining the data frame including only the rows and columns used in the model.
+    data2<- Data_Supplement
+
+    #Refitting the model object with this minimal data frame.
+    fit_True<-update(Model_Object,data=Data_Supplement)
+
+    #Warning message to ensure that users input Data_Supplement for the class lavaann
+    if(is.null(data2)){
+      stop("lavaan models require a data frameas input (the Data_Supplement argument is needed).")
+    }
+
+
+
+  }
+
+
   #Determining the real test statistic
    tryCatch(
       {
@@ -78,13 +122,20 @@ permTest_Contrast<-function(Model_Object,Test_Parameter,Randomize_Variables,Test
       },
           #if there is an error, check to ensure that the test statistic matches what is available to the model object
           error=function(e){
+
+            #Specififying the types of ceofficients available for the model class.
             if(Model.Class=="Other"){
               TS_Options<-colnames(summary(fit_True)[["coefficients"]])
             }
             if(Model.Class=="glmmTMB"){
               TS_Options<-colnames(summary(fit_True)[["coefficients"]]$cond)
             }
+            if(Model.Class=="lavaan"){
+              TS_Options<-c("se","z","pvalue")
+            }
 
+                  #Warning messages to use the appropriate test statistics available
+                  #to the model class
                  if (Test_Statistic %in%  TS_Options ){
                     message("Error: ensure that the Test Parameter is available in summary(Model_Object)")
                  }
@@ -92,7 +143,8 @@ permTest_Contrast<-function(Model_Object,Test_Parameter,Randomize_Variables,Test
                else{ message(paste("Error: Test_Statistic",Test_Statistic," is not part of the model object output\nPlease pick one of:"))
                     print(TS_Options)
                     stop("Test_Statistic not valid")
-                 }
+               }
+
       }
    )
 
@@ -155,15 +207,16 @@ p_Val<-length(random_TS[abs(random_TS)>abs(Real_TS)])/length(random_TS)
 
 #Creating a string with the p value
 out_P<-paste("The simulated p-value value for test parameter",Test_Parameter,"is:",p_Val,sep=" ")
-
+out_R<-paste("The real test statistic of the model is",Real_TS)
 #Returning a histogram of z values
-p<-ggplot2::ggplot()+
-  geom_histogram(aes(x=random_TS),bins = 50) +
-  geom_vline(aes(xintercept=Real_TS),colour="red")+
-  xlab(Test_Parameter)
+ p<-ggplot2::ggplot()+
+   geom_histogram(aes(x=random_TS),bins = 50) +
+   geom_vline(aes(xintercept=Real_TS),colour="red")+
+   xlab(Test_Parameter)
+
 
 if(OutputData==T){
-  return(list(out_P,p,random_TS))
+  return(list(out_P,out_R,random_TS,p))
 }
 
 else return(list(out_P,p))
