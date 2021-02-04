@@ -6,7 +6,8 @@
 #' the test parameter(s), and the amount of replication to be performed. This
 #' function can perform extract multiple test parameters from the same fitted model
 #' thus allowing permutation tests of multiple parameters to be performed at once,
-#' efficiently. This function works on lm, glm, lmer, glmer and glmmTMB classes.
+#' efficiently. This function works on lm, glm, lmer, glmer, glmmTMB, and Lavaan
+#' classes.
 #'
 #' @param Model_Object A statistical model object.
 #' @param Randomize_Variables A character vector indicating the variables that
@@ -23,7 +24,6 @@
 #' @param Data_Supplement The data frame that the model is built on.
 #' This is necessary to supply for models of the class "lavaan" as there is not
 #' functionality to extract the data frame from the model object.
-#' using the 'anova' function and choose one of the output parameters.
 #' @param Replication The number of simulations in the permutation test.
 #' @param OutputData Should the simulated test statistics be outputted ?
 #' @return A list of two items. The first is a data frame of results of the
@@ -31,7 +31,7 @@
 #' distribution of the simulated test statistics, with a red line displaying the
 #' test statistic of the original (non-randomized) data. If OutputData=T, then
 #' a vector of simulated test statistics will also be included in the output list.
-#' If multiple test paramters are supplied, then this output will be in a list for
+#' If multiple test parameters are supplied, then this output will be in a list for
 #' each test parameter.
 #' @export
 
