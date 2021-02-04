@@ -26,6 +26,10 @@
 #' functionality to extract the data frame from the model object.
 #' @param Replication The number of simulations in the permutation test.
 #' @param OutputData Should the simulated test statistics be outputted ?
+#' @param Dependent_Variable This is a character vector that specifies the
+#' dependent variable in a lavaan model. As a path analysis can have predictor variables
+#' as the independent and dependent variable, one must specify the dependent variable here.
+#' The independent variable is the character vector listed in "Test_Parameter"
 #' @return A list of two items. The first is a data frame of results of the
 #' permutation test. The second is a histogram displaying the sampling
 #' distribution of the simulated test statistics, with a red line displaying the
@@ -36,7 +40,7 @@
 #' @export
 
 
-permTest_Contrast<-function(Model_Object,Test_Parameter,Randomize_Variables,Test_Statistic,Replication,UseAllAvailableCores=TRUE,OutputData=FALSE,Data_Supplement=NULL){
+permTest_Contrast<-function(Model_Object,Test_Parameter,Randomize_Variables,Test_Statistic,Replication,UseAllAvailableCores=TRUE,OutputData=FALSE,Data_Supplement=NULL,Dependent_Variable=NULL){
 
    #----------
   #Determining the method of model extraction to use, depending on the class of
@@ -50,22 +54,42 @@ permTest_Contrast<-function(Model_Object,Test_Parameter,Randomize_Variables,Test
     }
   }
 
+
   else if(class(Model_Object)[1]=="lavaan"){ #Class lavaan
+        Model.Class<-"lavaan"
 
         if(length(Test_Parameter)<2){#Single parameter inputted
-            Model.Class<-"lavaan"
 
-            model_extract_CallFunction<-function(Data.ME,...){
-              model_extract3_Lavaan(Data.ME,...)
-            }
+                if(is.null(Dependent_Variable)){
+                    model_extract_CallFunction<-function(Data.ME,...){
+                    model_extract3_Lavaan(Data.ME,...)
+                    }
+                }
+
+                else{
+                    model_extract_CallFunction<-function(Data.ME,...){
+                    model_extract3_Lavaan_Specific(Data.ME,...)
+                    }
+                }
         }
 
-        else{#Single parameter inputted
-          Model.Class<-"lavaan"
+        else{ #Multiple paramter inputted.
 
-          model_extract_CallFunction<-function(Data.ME,...){
-            model_extract3_Lavaan_MultiParam(Data.ME,...)
-          }
+            if(is.null(Dependent_Variable)){
+
+                  model_extract_CallFunction<-function(Data.ME,...){
+                  model_extract3_Lavaan_MultiParam(Data.ME,...)
+
+                  }
+              }
+
+            else{
+
+                  model_extract_CallFunction<-function(Data.ME,...){
+                  model_extract3_Lavaan_MultiParam_Specific(Data.ME,...)
+
+                  }
+            }
         }
     }
 
@@ -106,7 +130,7 @@ permTest_Contrast<-function(Model_Object,Test_Parameter,Randomize_Variables,Test
 
     #Warning message to ensure that users input Data_Supplement for the class lavaann
     if(is.null(data2)){
-      stop("lavaan models require a data frameas input (the Data_Supplement argument is needed).")
+      stop("lavaan models require a data frame as input (the Data_Supplement argument is needed).")
     }
 
 
@@ -118,7 +142,7 @@ permTest_Contrast<-function(Model_Object,Test_Parameter,Randomize_Variables,Test
    tryCatch(
       {
       #attempting to get the test statistic from the model object.
-      Real_TS<-model_extract_CallFunction(Data.ME=data2,Model_Object.ME=fit_True,Variable.ME=Test_Parameter,Test_Statistic.ME=Test_Statistic)
+      Real_TS<-model_extract_CallFunction(Data.ME=data2,Model_Object.ME=fit_True,Variable.ME=Test_Parameter,Test_Statistic.ME=Test_Statistic,Dependent_Variable.ME=Dependent_Variable)
       },
           #if there is an error, check to ensure that the test statistic matches what is available to the model object
           error=function(e){
@@ -137,7 +161,7 @@ permTest_Contrast<-function(Model_Object,Test_Parameter,Randomize_Variables,Test
                   #Warning messages to use the appropriate test statistics available
                   #to the model class
                  if (Test_Statistic %in%  TS_Options ){
-                    message("Error: ensure that the Test Parameter is available in summary(Model_Object)")
+                    message("Error in model_extract_CallFunction. Ensure that the Test Parameter is available in summary(Model_Object)")
                  }
 
                else{ message(paste("Error: Test_Statistic",Test_Statistic," is not part of the model object output\nPlease pick one of:"))
@@ -147,6 +171,13 @@ permTest_Contrast<-function(Model_Object,Test_Parameter,Randomize_Variables,Test
 
       }
    )
+
+  #Ensuring that the correct format was inputted for lavaan classes
+if(length(Real_TS)>length(Test_Parameter) ){
+  stop("Multiple test statistics produced for single parameter,
+  ensure that Test_Parameters are unique in summary tables. If
+supplied class is lavaan, the Dependent_Variable must be specified.")
+}
 
 
   #####
@@ -159,11 +190,11 @@ permTest_Contrast<-function(Model_Object,Test_Parameter,Randomize_Variables,Test
 
   if(UseAllAvailableCores==TRUE){# Modeling desired formula over each
     #data frame with a random permutation
-    random_TS<-unlist(parallel::mclapply(Data_Frames,model_extract_CallFunction,Model_Object.ME=fit_True,Variable.ME=Test_Parameter,Test_Statistic.ME=Test_Statistic))
+    random_TS<-unlist(parallel::mclapply(Data_Frames,model_extract_CallFunction,Model_Object.ME=fit_True,Variable.ME=Test_Parameter,Test_Statistic.ME=Test_Statistic,Dependent_Variable.ME=Dependent_Variable))
   }
 
   else{ # Modeling desired formula over each data frame with a random permutation
-    random_TS<-unlist(lapply(Data_Frames,model_extract_CallFunction,Model_Object.ME=fit_True,Variable.ME=Test_Parameter,Test_Statistic.ME=Test_Statistic))
+    random_TS<-unlist(lapply(Data_Frames,model_extract_CallFunction,Model_Object.ME=fit_True,Variable.ME=Test_Parameter,Test_Statistic.ME=Test_Statistic,Dependent_Variable.ME=Dependent_Variable))
   }
 
 

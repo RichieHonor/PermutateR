@@ -94,6 +94,25 @@ model_extract3_Lavaan<-function(Data.ME,Model_Object.ME,Variable.ME,Test_Statist
    return(Output)
 }
 
+#This function will determine the test statistic based on the output of a
+#sem fitted in lavaan
+model_extract3_Lavaan_Specific<-function(Data.ME,Model_Object.ME,Variable.ME,Test_Statistic.ME,Dependent_Variable.ME,...){
+
+   #Performing the supplied model again with the random data.
+   Random_Model<-update(Model_Object.ME,data=Data.ME)
+
+   #Obtaining the output data frame for this model.
+   invisible(capture.output(
+      OutputDF<-summary(Random_Model,standardize=T)[[1]]
+   ))
+
+   #extracting desired coefficients. (must be a vector with the left and righthandside specified.)
+   Output<-OutputDF %>% dplyr::filter(rhs %in% Variable.ME , lhs %in% Dependent_Variable.ME) %>% dplyr::select(Test_Statistic.ME)
+
+   Output<- Output[,Test_Statistic.ME]
+   return(Output)
+}
+
 #This function will determine the test statistics of multiple parameters in a lavaan model
 
 model_extract3_Lavaan_MultiParam<-function(Data.ME,Model_Object.ME,Variable.ME,Test_Statistic.ME,...){
@@ -117,6 +136,31 @@ model_extract3_Lavaan_MultiParam<-function(Data.ME,Model_Object.ME,Variable.ME,T
 
    return(Output)
 }
+
+model_extract3_Lavaan_MultiParam_Specific<-function(Data.ME,Model_Object.ME,Variable.ME,Test_Statistic.ME,Dependent_Variable.ME,...){
+
+
+   #Performing the supplied model again with the random data.
+   Random_Model<-update(Model_Object.ME,data=Data.ME)
+
+   #Obtaining the output data frame for this model.
+   invisible(capture.output(
+      OutputDF<-summary(Random_Model,standardize=T)[[1]]
+   ))
+
+
+   #extracting desired coefficients.
+   Output<-OutputDF %>% dplyr::filter(op=="~",lhs %in% Dependent_Variable.ME , rhs %in% Variable.ME) %>% dplyr::select(rhs,Test_Statistic.ME)
+
+
+
+   Output<-tibble::deframe(Output)
+
+   print(Output)
+
+   return(Output)
+}
+
 
 
 
