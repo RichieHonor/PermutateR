@@ -88,7 +88,7 @@ model_extract3_Lavaan<-function(Data.ME,Model_Object.ME,Variable.ME,Test_Statist
       ))
 
    #extracting desired coefficients.
-   Output<-OutputDF %>% dplyr::filter(lhs %in% Variable.ME) %>% dplyr::select(Test_Statistic.ME)
+   Output<-OutputDF %>% dplyr::filter(lhs %in% Variable.ME) %>% dplyr::select(all_of(Test_Statistic.ME))
 
    Output<- Output[,Test_Statistic.ME]
    return(Output)
@@ -107,7 +107,7 @@ model_extract3_Lavaan_Specific<-function(Data.ME,Model_Object.ME,Variable.ME,Tes
    ))
 
    #extracting desired coefficients. (must be a vector with the left and righthandside specified.)
-   Output<-OutputDF %>% dplyr::filter(rhs %in% Variable.ME , lhs %in% Dependent_Variable.ME) %>% dplyr::select(Test_Statistic.ME)
+   Output<-OutputDF %>% dplyr::filter(rhs %in% Variable.ME , lhs %in% Dependent_Variable.ME) %>% dplyr::select(all_of(Test_Statistic.ME))
 
    Output<- Output[,Test_Statistic.ME]
    return(Output)
@@ -126,7 +126,7 @@ model_extract3_Lavaan_MultiParam<-function(Data.ME,Model_Object.ME,Variable.ME,T
    ))
 
    #extracting desired coefficients.
-   Output<-OutputDF %>% dplyr::filter(lhs %in% Variable.ME) %>% dplyr::select(lhs,Test_Statistic.ME)
+   Output<-OutputDF %>% dplyr::filter(lhs %in% Variable.ME) %>% dplyr::select(lhs,all_of(Test_Statistic.ME))
 
 
 
@@ -150,7 +150,7 @@ model_extract3_Lavaan_MultiParam_Specific<-function(Data.ME,Model_Object.ME,Vari
 
 
    #extracting desired coefficients.
-   Output<-OutputDF %>% dplyr::filter(op=="~",lhs %in% Dependent_Variable.ME , rhs %in% Variable.ME) %>% dplyr::select(rhs,Test_Statistic.ME)
+   Output<-OutputDF %>% dplyr::filter(op=="~",lhs %in% Dependent_Variable.ME , rhs %in% Variable.ME) %>% dplyr::select(rhs,all_of(Test_Statistic.ME))
 
 
 
