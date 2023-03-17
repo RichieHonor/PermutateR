@@ -107,8 +107,8 @@ permTest_LR_int<-function(Model_Object,Test_Parameter,Randomize_Variables,Test_S
 
   #Returning a histogram of z values
   p<-ggplot2::ggplot()+
-    geom_histogram(aes(x=random_TS),bins = 50) +
-    geom_vline(aes(xintercept=Real_TS),colour="red")
+    ggplot2::geom_histogram(aes(x=random_TS),bins = 50) +
+    ggplot2::geom_vline(aes(xintercept=Real_TS),colour="red")
 
   if(OutputData==T){
     return(list(out_P,p,random_TS))

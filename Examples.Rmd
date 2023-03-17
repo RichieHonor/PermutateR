@@ -1,0 +1,79 @@
+---
+title: "Examples"
+author: "GGMFS Team"
+date: "26/04/2021"
+output: html_document
+---
+
+# Downloading the package
+```{r}
+library("devtools")
+install_github("RichieHonor/PermutateR")
+
+```
+
+# Generate data for examples
+```{r}
+#Y (Dependent) variables: 
+y1 = rnorm(1000)
+
+
+#X (independent) variables:
+#A numeric variable : 
+x1 = y1 + rnorm(1000)
+
+# A Categorical variable
+x2=rep(c("a","b"),each=500)
+
+
+#Generate data frame
+Data<-data.frame(y1,x1,x2)
+Data
+
+
+
+```
+
+
+#Performing permutation tests
+```{r}
+library(PermutateR)
+library(ggplot2)
+library(dplyr)
+library(glmmTMB)
+library(lme4)
+
+#Testing interaction by extracting the test statistics of a likelyhood ratio test
+Fit<-lm(y1~x1*x2)
+permTest_LR_int(Fit,"x1:x2","x1","Pr(>F)",10)
+
+Fit<-glm(y1~x1*x2)
+permTest_LR_int(Fit,"x1:x2","x1","Deviance",10)
+
+Fit<-glmmTMB(y1~x1*x2)
+permTest_LR_int(Fit,"x1:x2","x1","Pr(>Chisq)",10)
+
+
+#Testing Main effect using likelihood ratio test (can be performed using the other function, but this one is ~50% faster)
+Fit<-lm(y1~x1)
+permTest_LR(Fit,"x1","Pr(>F)",10)
+
+Fit<-glm(y1~x1)
+permTest_LR(Fit,"x1","Deviance",10)
+
+Fit<-glmmTMB(y1~x1)
+permTest_LR(Fit,"x1","Pr(>Chisq)",10)
+
+
+
+#Testing only the coefficient from the summary output (i.e. the contrast). 
+Fit<-lm(y1~x1)
+permTest_Contrast(Fit,"x1","x1","Pr(>|t|)",10)
+
+Fit<-glm(y1~x1)
+permTest_Contrast(Fit,"x1","x1","Pr(>|t|)",10)
+
+
+
+```
+
