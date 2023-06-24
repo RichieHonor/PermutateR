@@ -84,8 +84,8 @@ model_extract3_Lavaan<-function(Data.ME,Model_Object.ME,Variable.ME,Test_Statist
 
    #Obtaining the output data frame for this model.
    invisible(capture.output(
-      OutputDF<-summary(Random_Model,standardize=T)[[1]]
-      ))
+     OutputDF<-summary(Random_Model,standardize=T) %>% purrr::pluck("pe")
+   ))
 
    #extracting desired coefficients.
    Output<-OutputDF %>% dplyr::filter(lhs %in% Variable.ME) %>% dplyr::select(all_of(Test_Statistic.ME))
@@ -103,7 +103,7 @@ model_extract3_Lavaan_Specific<-function(Data.ME,Model_Object.ME,Variable.ME,Tes
 
    #Obtaining the output data frame for this model.
    invisible(capture.output(
-      OutputDF<-summary(Random_Model,standardize=T)[[1]]
+     OutputDF<-summary(Random_Model,standardize=T) %>% purrr::pluck("pe")
    ))
 
    #extracting desired coefficients. (must be a vector with the left and righthandside specified.)
@@ -122,7 +122,7 @@ model_extract3_Lavaan_MultiParam<-function(Data.ME,Model_Object.ME,Variable.ME,T
 
    #Obtaining the output data frame for this model.
    invisible(capture.output(
-      OutputDF<-summary(Random_Model,standardize=T)[[1]]
+     OutputDF<-summary(Random_Model,standardize=T) %>% purrr::pluck("pe")
    ))
 
    #extracting desired coefficients.
@@ -145,13 +145,12 @@ model_extract3_Lavaan_MultiParam_Specific<-function(Data.ME,Model_Object.ME,Vari
 
    #Obtaining the output data frame for this model.
    invisible(capture.output(
-      OutputDF<-summary(Random_Model,standardize=T)[[1]]
+     OutputDF<-summary(Random_Model,standardize=T) %>% purrr::pluck("pe")
    ))
 
 
    #extracting desired coefficients.
    Output<-OutputDF %>% dplyr::filter(op=="~",lhs %in% Dependent_Variable.ME , rhs %in% Variable.ME) %>% dplyr::select(rhs,all_of(Test_Statistic.ME))
-
 
 
    Output<-tibble::deframe(Output)

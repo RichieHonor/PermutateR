@@ -42,7 +42,7 @@
 
 permTest_Contrast<-function(Model_Object,Test_Parameter,Randomize_Variables,Test_Statistic,Replication,UseAllAvailableCores=TRUE,OutputData=FALSE,Data_Supplement=NULL,Dependent_Variable=NULL){
 
-   #----------
+  #----------
   #Determining the method of model extraction to use, depending on the class of
   #the model object.
 
@@ -56,42 +56,42 @@ permTest_Contrast<-function(Model_Object,Test_Parameter,Randomize_Variables,Test
 
 
   else if(class(Model_Object)[1]=="lavaan"){ #Class lavaan
-        Model.Class<-"lavaan"
+    Model.Class<-"lavaan"
 
-        if(length(Test_Parameter)<2){#Single parameter inputted
+    if(length(Test_Parameter)<2){#Single parameter inputted
 
-                if(is.null(Dependent_Variable)){
-                    model_extract_CallFunction<-function(Data.ME,...){
-                    model_extract3_Lavaan(Data.ME,...)
-                    }
-                }
-
-                else{
-                    model_extract_CallFunction<-function(Data.ME,...){
-                    model_extract3_Lavaan_Specific(Data.ME,...)
-                    }
-                }
+      if(is.null(Dependent_Variable)){
+        model_extract_CallFunction<-function(Data.ME,...){
+          model_extract3_Lavaan(Data.ME,...)
         }
+      }
 
-        else{ #Multiple paramter inputted.
-
-            if(is.null(Dependent_Variable)){
-
-                  model_extract_CallFunction<-function(Data.ME,...){
-                  model_extract3_Lavaan_MultiParam(Data.ME,...)
-
-                  }
-              }
-
-            else{
-
-                  model_extract_CallFunction<-function(Data.ME,...){
-                  model_extract3_Lavaan_MultiParam_Specific(Data.ME,...)
-
-                  }
-            }
+      else{
+        model_extract_CallFunction<-function(Data.ME,...){
+          model_extract3_Lavaan_Specific(Data.ME,...)
         }
+      }
     }
+
+    else{ #Multiple paramter inputted.
+
+      if(is.null(Dependent_Variable)){
+
+        model_extract_CallFunction<-function(Data.ME,...){
+          model_extract3_Lavaan_MultiParam(Data.ME,...)
+
+        }
+      }
+
+      else{
+
+        model_extract_CallFunction<-function(Data.ME,...){
+          model_extract3_Lavaan_MultiParam_Specific(Data.ME,...)
+
+        }
+      }
+    }
+  }
 
   else{ #Class other : lm , glm, lmer, glmer.
 
@@ -104,7 +104,7 @@ permTest_Contrast<-function(Model_Object,Test_Parameter,Randomize_Variables,Test
 
 
 
- #####
+  #####
   #Preparing data for simulation and determining real test statistics
   #______________________________________________________
 
@@ -113,11 +113,11 @@ permTest_Contrast<-function(Model_Object,Test_Parameter,Randomize_Variables,Test
   #user will need to input their data manually for this type of function.
   if(Model.Class!="lavaan"){
 
-  #Obtaining the data frame including only the rows and columns used in the model.
-  data2<- model.frame(Model_Object,drop.unused.levels=TRUE)
+    #Obtaining the data frame including only the rows and columns used in the model.
+    data2<- model.frame(Model_Object,drop.unused.levels=TRUE)
 
-  #Refitting the model object with this minimal data frame.
-  fit_True<-update(Model_Object,data=data2)
+    #Refitting the model object with this minimal data frame.
+    fit_True<-update(Model_Object,data=data2)
   }
 
   if(Model.Class=="lavaan"){
@@ -139,45 +139,45 @@ permTest_Contrast<-function(Model_Object,Test_Parameter,Randomize_Variables,Test
 
 
   #Determining the real test statistic
-   tryCatch(
-      {
+  tryCatch(
+    {
       #attempting to get the test statistic from the model object.
       Real_TS<-model_extract_CallFunction(Data.ME=data2,Model_Object.ME=fit_True,Variable.ME=Test_Parameter,Test_Statistic.ME=Test_Statistic,Dependent_Variable.ME=Dependent_Variable)
-      },
-          #if there is an error, check to ensure that the test statistic matches what is available to the model object
-          error=function(e){
+    },
+    #if there is an error, check to ensure that the test statistic matches what is available to the model object
+    error=function(e){
 
-            #Specififying the types of ceofficients available for the model class.
-            if(Model.Class=="Other"){
-              TS_Options<-colnames(summary(fit_True)[["coefficients"]])
-            }
-            if(Model.Class=="glmmTMB"){
-              TS_Options<-colnames(summary(fit_True)[["coefficients"]]$cond)
-            }
-            if(Model.Class=="lavaan"){
-              TS_Options<-c("se","z","pvalue")
-            }
-
-                  #Warning messages to use the appropriate test statistics available
-                  #to the model class
-                 if (Test_Statistic %in%  TS_Options ){
-                    message("Error in model_extract_CallFunction. Ensure that the Test Parameter is available in summary(Model_Object)")
-                 }
-
-               else{ message(paste("Error: Test_Statistic",Test_Statistic," is not part of the model object output\nPlease pick one of:"))
-                    print(TS_Options)
-                    stop("Test_Statistic not valid")
-               }
-
+      #Specififying the types of ceofficients available for the model class.
+      if(Model.Class=="Other"){
+        TS_Options<-colnames(summary(fit_True)[["coefficients"]])
       }
-   )
+      if(Model.Class=="glmmTMB"){
+        TS_Options<-colnames(summary(fit_True)[["coefficients"]]$cond)
+      }
+      if(Model.Class=="lavaan"){
+        TS_Options<-c("se","z","pvalue")
+      }
+
+      #Warning messages to use the appropriate test statistics available
+      #to the model class
+      if (Test_Statistic %in%  TS_Options ){
+        message("Error in model_extract_CallFunction. Ensure that the Test Parameter is available in summary(Model_Object)")
+      }
+
+      else{ message(paste("Error: Test_Statistic",Test_Statistic," is not part of the model object output\nPlease pick one of:"))
+        print(TS_Options)
+        stop("Test_Statistic not valid")
+      }
+
+    }
+  )
 
   #Ensuring that the correct format was inputted for lavaan classes
-if(length(Real_TS)>length(Test_Parameter) ){
-  stop("Multiple test statistics produced for single parameter,
+  if(length(Real_TS)>length(Test_Parameter) ){
+    stop("Multiple test statistics produced for single parameter,
   ensure that Test_Parameters are unique in summary tables. If
 supplied class is lavaan, the Dependent_Variable must be specified.")
-}
+  }
 
 
   #####
@@ -209,23 +209,23 @@ supplied class is lavaan, the Dependent_Variable must be specified.")
     out<-Format_Output(random_TS,Real_TS,OutputData,Test_Parameter)
   }
 
-   else{
-     #Creating a data frame out of the named vector.
-     OutputDataFrame<-stack(random_TS)
-     Real_TS_DataFrame<-stack(Real_TS)
-     out<-list()
-        #Generating results
-        for(i in 1:length(Test_Parameter)){
-          #Isolating the random TS results for the focal parameter
-          random_TS<-OutputDataFrame$values[OutputDataFrame$ind==Test_Parameter[i]]
+  else{
+    #Creating a data frame out of the named vector.
+    OutputDataFrame<-stack(random_TS)
+    Real_TS_DataFrame<-stack(Real_TS)
+    out<-list()
+    #Generating results
+    for(i in 1:length(Test_Parameter)){
+      #Isolating the random TS results for the focal parameter
+      random_TS<-OutputDataFrame$values[OutputDataFrame$ind==Test_Parameter[i]]
 
-          #Isolating the real ts for the focal parameter
-          Real_TS_Focal<-Real_TS_DataFrame$value[Real_TS_DataFrame$ind==Test_Parameter[i]]
+      #Isolating the real ts for the focal parameter
+      Real_TS_Focal<-Real_TS_DataFrame$value[Real_TS_DataFrame$ind==Test_Parameter[i]]
 
-          out[[i]]<-Format_Output(random_TS=random_TS,Real_TS=Real_TS_Focal,OutputData=OutputData,Test_Parameter=Test_Parameter[i])
+      out[[i]]<-Format_Output(random_TS=random_TS,Real_TS=Real_TS_Focal,OutputData=OutputData,Test_Parameter=Test_Parameter[i])
 
-        }
-   }
+    }
+  }
 
   return(out)
 
@@ -233,24 +233,24 @@ supplied class is lavaan, the Dependent_Variable must be specified.")
 
 
 Format_Output<-function(random_TS,Real_TS,OutputData,Test_Parameter){
-#Obtaining p value
-p_Val<-length(random_TS[abs(random_TS)>abs(Real_TS)])/length(random_TS)
+  #Obtaining p value
+  p_Val<-length(random_TS[abs(random_TS)>abs(Real_TS)])/length(random_TS)
 
-#Creating a string with the p value
-out_P<-paste("The simulated p-value value for test parameter",Test_Parameter,"is:",p_Val,sep=" ")
-out_R<-paste("The real test statistic of the model is",Real_TS)
-#Returning a histogram of z values
- p<-ggplot2::ggplot()+
-   geom_histogram(aes(x=random_TS),bins = 50) +
-   geom_vline(aes(xintercept=Real_TS),colour="red")+
-   xlab(Test_Parameter)
+  #Creating a string with the p value
+  out_P<-paste("The simulated p-value value for test parameter",Test_Parameter,"is:",p_Val,sep=" ")
+  out_R<-paste("The real test statistic of the model is",Real_TS)
+  #Returning a histogram of z values
+  p<-ggplot2::ggplot()+
+    geom_histogram(aes(x=random_TS),bins = 50) +
+    geom_vline(aes(xintercept=Real_TS),colour="red")+
+    xlab(Test_Parameter)
 
 
-if(OutputData==T){
-  return(list(out_P,out_R,random_TS,p))
-}
+  if(OutputData==T){
+    return(list(out_P,out_R,random_TS,p))
+  }
 
-else return(list(out_P,p))
+  else return(list(out_P,p))
 
 }
 
