@@ -39,7 +39,6 @@
 #' each test parameter.
 #' @export
 
-
 permTest_Contrast<-function(Model_Object,Test_Parameter,Randomize_Variables,Test_Statistic,Replication,UseAllAvailableCores=TRUE,OutputData=FALSE,Data_Supplement=NULL,Dependent_Variable=NULL){
 
   #----------
@@ -51,6 +50,8 @@ permTest_Contrast<-function(Model_Object,Test_Parameter,Randomize_Variables,Test
 
     model_extract_CallFunction<-function(Data.ME,...){
       model_extract3_GLMMTMB(Data.ME,...)
+      print("Running model_extract3_GLMMTMB")
+
     }
   }
 
@@ -58,18 +59,23 @@ permTest_Contrast<-function(Model_Object,Test_Parameter,Randomize_Variables,Test
   else if(class(Model_Object)[1]=="lavaan"){ #Class lavaan
     Model.Class<-"lavaan"
 
+    print("Model class lavaan detected")
+
     if(length(Test_Parameter)<2){#Single parameter inputted
+      print("Single test parameter inputted")
 
       if(is.null(Dependent_Variable)){
         model_extract_CallFunction<-function(Data.ME,...){
           model_extract3_Lavaan(Data.ME,...)
         }
+        print("Running function model_extract3_Lavaan")
       }
 
       else{
         model_extract_CallFunction<-function(Data.ME,...){
           model_extract3_Lavaan_Specific(Data.ME,...)
         }
+        print("Running function model_extract3_Lavaan_Specific")
       }
     }
 
@@ -79,16 +85,16 @@ permTest_Contrast<-function(Model_Object,Test_Parameter,Randomize_Variables,Test
 
         model_extract_CallFunction<-function(Data.ME,...){
           model_extract3_Lavaan_MultiParam(Data.ME,...)
-
         }
+        print("Running function model_extract3_Lavaan_MultiParam")
       }
 
       else{
 
         model_extract_CallFunction<-function(Data.ME,...){
           model_extract3_Lavaan_MultiParam_Specific(Data.ME,...)
-
         }
+        print("Running function model_extract3_Lavaan_MultiParam_Specific")
       }
     }
   }
@@ -100,6 +106,7 @@ permTest_Contrast<-function(Model_Object,Test_Parameter,Randomize_Variables,Test
     model_extract_CallFunction<-function(Data.ME,...){
       model_extract3_General(Data.ME,...)
     }
+    print("Running Generic model class function")
   }
 
 
@@ -199,6 +206,8 @@ supplied class is lavaan, the Dependent_Variable must be specified.")
 
 
 
+
+
   #####
   # Formulating output
   #______________________________________________________
@@ -230,6 +239,7 @@ supplied class is lavaan, the Dependent_Variable must be specified.")
   return(out)
 
 }
+
 
 
 Format_Output<-function(random_TS,Real_TS,OutputData,Test_Parameter){
