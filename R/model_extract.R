@@ -82,6 +82,7 @@ model_extract3_Lavaan<-function(Data.ME,Model_Object.ME,Variable.ME,Test_Statist
    #Performing the supplied model again with the random data.
    Random_Model<-update(Model_Object.ME,data=Data.ME)
    print("1")
+   print(Random_Model)
 
    #Obtaining the output data frame for this model.
    invisible(capture.output(
