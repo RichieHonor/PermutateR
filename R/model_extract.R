@@ -83,14 +83,12 @@ model_extract3_Lavaan<-function(Data.ME,Model_Object.ME,Variable.ME,Test_Statist
    Random_Model<-update(Model_Object.ME,data=Data.ME)
    print("1")
    print(Random_Model)
-   print(summary(Random_Model) %>% purrr::pluck("pe"))
+   print(summary(Random_Model))
 
    #Obtaining the output data frame for this model.
    invisible(capture.output(
      OutputDF<-summary(Random_Model,standardize=T) %>% purrr::pluck("pe")
    ))
-   print("2")
-   print(OutputDF)
 
    #extracting desired coefficients.
    Output<-OutputDF %>% dplyr::filter(lhs %in% Variable.ME) %>% dplyr::select(all_of(Test_Statistic.ME))
