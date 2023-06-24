@@ -7,7 +7,7 @@
 #' @param Model_Object A statistical model object (change name)
 #' @param Data The data that the model is built from.
 #' @return The desired test statistic
-#' @keywords internal
+#' keywords internal
 #' @export
 
 model_extract<-function(Data.ME,Model_Object.ME,Null_Model.ME,Test_Statistic.ME,...){
