@@ -81,12 +81,6 @@ model_extract3_Lavaan<-function(Data.ME,Model_Object.ME,Variable.ME,Test_Statist
 
    #Performing the supplied model again with the random data.
    Random_Model<-update(Model_Object.ME,data=Data.ME)
-   print("just the model")
-   print(Random_Model)
-   print("summary before pluck")
-   print(summary(Random_Model))
-   print("with pluck")
-   print(summary(Random_Model,standardize=T) %>% purrr::pluck("pe"))
 
    #Obtaining the output data frame for this model.
    invisible(capture.output(
@@ -96,10 +90,9 @@ model_extract3_Lavaan<-function(Data.ME,Model_Object.ME,Variable.ME,Test_Statist
    #extracting desired coefficients.
    Output<-OutputDF %>% dplyr::filter(lhs %in% Variable.ME) %>% dplyr::select(all_of(Test_Statistic.ME))
 
-   print("3")
    Output<- Output[,Test_Statistic.ME]
-   print("4")
-   return(Output)
+
+      return(Output)
 }
 
 #This function will determine the test statistic based on the output of a
@@ -111,7 +104,7 @@ model_extract3_Lavaan_Specific<-function(Data.ME,Model_Object.ME,Variable.ME,Tes
 
    #Obtaining the output data frame for this model.
    invisible(capture.output(
-     OutputDF<-summary(Random_Model,standardize=T) %>% purrr::pluck("pe")
+     OutputDF<-lavaan::summary(Random_Model,standardize=T) %>% purrr::pluck("pe")
    ))
 
    #extracting desired coefficients. (must be a vector with the left and righthandside specified.)
@@ -130,7 +123,7 @@ model_extract3_Lavaan_MultiParam<-function(Data.ME,Model_Object.ME,Variable.ME,T
 
    #Obtaining the output data frame for this model.
    invisible(capture.output(
-     OutputDF<-summary(Random_Model,standardize=T) %>% purrr::pluck("pe")
+     OutputDF<-lavaan::summary(Random_Model,standardize=T) %>% purrr::pluck("pe")
    ))
 
    #extracting desired coefficients.
@@ -153,7 +146,7 @@ model_extract3_Lavaan_MultiParam_Specific<-function(Data.ME,Model_Object.ME,Vari
 
    #Obtaining the output data frame for this model.
    invisible(capture.output(
-     OutputDF<-summary(Random_Model,standardize=T) %>% purrr::pluck("pe")
+     OutputDF<-lavaan::summary(Random_Model,standardize=T) %>% purrr::pluck("pe")
    ))
 
 
