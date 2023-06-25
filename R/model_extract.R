@@ -90,7 +90,7 @@ model_extract3_Lavaan<-function(Data.ME,Model_Object.ME,Variable.ME,Test_Statist
 
    #Obtaining the output data frame for this model.
    invisible(capture.output(
-     OutputDF<-summary(Random_Model,standardize=T) %>% purrr::pluck("pe")
+     OutputDF<-lavaan::summary(Random_Model,standardize=T) %>% purrr::pluck("pe")
    ))
 
    #extracting desired coefficients.
