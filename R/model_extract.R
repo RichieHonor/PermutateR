@@ -81,9 +81,12 @@ model_extract3_Lavaan<-function(Data.ME,Model_Object.ME,Variable.ME,Test_Statist
 
    #Performing the supplied model again with the random data.
    Random_Model<-update(Model_Object.ME,data=Data.ME)
-   print("1")
+   print("just the model")
    print(Random_Model)
+   print("summary before pluck")
    print(summary(Random_Model))
+   print("with pluck")
+   print(summary(Random_Model,standardize=T) %>% purrr::pluck("pe"))
 
    #Obtaining the output data frame for this model.
    invisible(capture.output(
